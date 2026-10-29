@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
-from backend.schemas.measurement import MeasurementResponse,MeasurementCreate
+from backend.schemas.measurement import MeasurementResponse,MeasurementCreate, MeasurementAggregate
 from backend.models.measurement import Measurement
 from backend.db.session import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select
+from sqlalchemy import select, func
 from pydantic import AwareDatetime
 router = APIRouter(prefix ="/measurements", tags = ["measurements"])
 
@@ -45,3 +45,26 @@ async def get_measurements(
     result = await db.execute(stmt)
     measurements = result.scalars().all()
     return measurements
+@router.get("/aggregates", response_model = list[MeasurementAggregate])
+async def get_aggregates(
+        agent_id: str | None = None,
+        target: str | None = None,
+        since: AwareDatetime | None = None,
+        until: AwareDatetime | None = None,
+        db: AsyncSession = Depends(get_db)):
+    start = func.date_trunc("minute", Measurement.timestamp_utc).label("start")
+    packets_sent = func.sum(Measurement.packets_sent).label("packets_sent")
+    packets_received = func.sum(Measurement.packets_received).label("packets_received")
+    stmt = select(start, packets_sent, packets_received)
+    if agent_id:
+        stmt = stmt.where(Measurement.agent_id == agent_id)
+    if target:
+        stmt = stmt.where(Measurement.target == target)
+    if since:
+        stmt = stmt.where(Measurement.timestamp_utc >= since)
+    if until:
+        stmt = stmt.where(Measurement.timestamp_utc <= until)
+    stmt = stmt.group_by(start).order_by(start.desc())
+    result = await db.execute(stmt)
+    aggregates = result.all()
+    return aggregates

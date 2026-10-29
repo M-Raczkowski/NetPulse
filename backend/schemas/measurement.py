@@ -25,3 +25,9 @@ class MeasurementCreate(MeasurementBase):
 class MeasurementResponse(MeasurementBase):
     id: int
     model_config = {"from_attributes": True}
+
+class MeasurementAggregate(BaseModel):
+    start: AwareDatetime
+    packets_sent: int
+    packets_received: int
+    model_config = {"from_attributes": True}
