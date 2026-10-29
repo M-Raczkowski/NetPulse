@@ -32,4 +32,6 @@ class MeasurementAggregate(BaseModel):
     packets_received: int
     packet_loss_percentage: float
     rtt_avg_ms: float | None
+    rtt_min_ms: float | None
+    rtt_max_ms: float | None
     model_config = {"from_attributes": True}
