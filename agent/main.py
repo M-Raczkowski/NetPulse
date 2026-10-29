@@ -3,6 +3,7 @@ from agent.measurements.rtt import measure_rtt
 from agent.measurements.window import build_measurement
 from agent.transport.client import send_measurement
 from datetime import datetime, timezone
+import time
 
 def run_cycle(host: str, port: int) -> str:
     timezone_utc = datetime.now(timezone.utc)
@@ -19,3 +20,20 @@ def run_round() -> dict[str, str]:
             status = f"error: {exc}"
         results[f"{host}:{port}"] = status
     return results
+
+def main() -> None:
+    try:
+        while True:
+            start = time.monotonic()
+            measurements = run_round()
+            end = time.monotonic()
+            measurement_time = end - start
+            wait_time = max(0,CYCLE_SECONDS - measurement_time)
+            print(measurements)
+            time.sleep(wait_time)
+    except KeyboardInterrupt:
+        print(f"{AGENT_ID} has stopped")
+
+
+if __name__ == "__main__":
+    main()
