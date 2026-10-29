@@ -55,7 +55,9 @@ async def get_aggregates(
     start = func.date_trunc("minute", Measurement.timestamp_utc).label("start")
     packets_sent = func.sum(Measurement.packets_sent).label("packets_sent")
     packets_received = func.sum(Measurement.packets_received).label("packets_received")
-    stmt = select(start, packets_sent, packets_received)
+    packet_loss_percentage = (((packets_sent - packets_received)*100.0)/packets_sent).label("packet_loss_percentage")
+    rtt_avg_ms = (func.sum(Measurement.rtt_avg_ms * Measurement.packets_received)/func.nullif(packets_received, 0)).label("rtt_avg_ms")
+    stmt = select(start, packets_sent, packets_received, packet_loss_percentage, rtt_avg_ms)
     if agent_id:
         stmt = stmt.where(Measurement.agent_id == agent_id)
     if target:

@@ -30,4 +30,6 @@ class MeasurementAggregate(BaseModel):
     start: AwareDatetime
     packets_sent: int
     packets_received: int
+    packet_loss_percentage: float
+    rtt_avg_ms: float | None
     model_config = {"from_attributes": True}
