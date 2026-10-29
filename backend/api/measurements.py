@@ -5,7 +5,7 @@ from backend.db.session import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
-
+from pydantic import AwareDatetime
 router = APIRouter(prefix ="/measurements", tags = ["measurements"])
 
 @router.post("", response_model = MeasurementResponse, status_code = 201)
@@ -29,12 +29,18 @@ async def get_measurements(
         agent_id: str | None = None,
         target: str | None = None,
         limit : int = 100,
+        since: AwareDatetime | None = None,
+        until: AwareDatetime | None = None,
         db: AsyncSession = Depends(get_db)):
     stmt = select(Measurement)
     if agent_id:
         stmt = stmt.where(Measurement.agent_id == agent_id)
     if target:
         stmt = stmt.where(Measurement.target == target)
+    if since:
+        stmt = stmt.where(Measurement.timestamp_utc >= since)
+    if until:
+        stmt = stmt.where(Measurement.timestamp_utc <= until)
     stmt = stmt.limit(limit).order_by(Measurement.timestamp_utc.desc())
     result = await db.execute(stmt)
     measurements = result.scalars().all()
