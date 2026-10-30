@@ -6,14 +6,9 @@ def z_score(history: list[float | None], latest: float | None, k: float = 3.0, m
     history = [x for x in history if x is not None]
     if len(history) < min_history:
         return False
-    else:
-        avg_history = statistics.mean(history)
-        deviation = statistics.stdev(history)
-        if deviation == 0:
-            return False
-        else:
-            z_calc = (latest - avg_history)/ deviation
-            if z_calc > k:
-                return True
-            else:
-                return False
+    avg_history = statistics.mean(history)
+    deviation = statistics.stdev(history)
+    if deviation == 0:
+        return False
+    z_calc = (latest - avg_history) / deviation
+    return z_calc > k
