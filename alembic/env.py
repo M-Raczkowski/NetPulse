@@ -9,6 +9,7 @@ from alembic import context
 from backend.db.session import Base, DATABASE_URL
 
 from backend.models.measurement import Measurement
+from backend.models.alert import Alert
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
