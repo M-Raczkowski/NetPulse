@@ -27,3 +27,7 @@ def open_alert(
                   detector=detector, value_at_open=value_at_open, opened_at=datetime.now(timezone.utc))
     db.add(alert)
     return alert
+
+
+def close_alert(alert: Alert) -> None:
+    alert.closed_at = datetime.now(timezone.utc)
