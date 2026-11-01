@@ -1,5 +1,6 @@
 import socket
 import os
+import threading
 
 
 def run_udp(port: int) -> None:
@@ -32,4 +33,6 @@ def run_tcp(port: int) -> None:
 if __name__ == "__main__":
     RESPONDER_PORT = os.getenv("RESPONDER_PORT", "9999")
     PORT = int(RESPONDER_PORT)
-    run_udp(PORT)
+    udp_thread = threading.Thread(target=run_udp, args=(PORT,), daemon=True)
+    udp_thread.start()
+    run_tcp(PORT)
