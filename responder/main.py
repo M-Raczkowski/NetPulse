@@ -18,6 +18,17 @@ def handle_client(conn: socket.socket) -> None:
             break
 
 
+def run_tcp(port: int) -> None:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind(("0.0.0.0", port))
+    sock.listen()
+    while True:
+        conn, addr = sock.accept()
+        with conn:
+            handle_client(conn)
+
+
 if __name__ == "__main__":
     RESPONDER_PORT = os.getenv("RESPONDER_PORT", "9999")
     PORT = int(RESPONDER_PORT)
