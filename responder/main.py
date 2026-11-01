@@ -1,12 +1,15 @@
 import socket
 import os
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+def run_udp(port: int) -> None:
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind(("0.0.0.0", port))
 
-RESPONDER_PORT = os.getenv("RESPONDER_PORT", "9999")
-PORT = int(RESPONDER_PORT)
-sock.bind(("0.0.0.0", PORT))
+    while True:
+        data, addr = sock.recvfrom(1024)
+        sock.sendto(data, addr)
 
-while True:
-    data, addr = sock.recvfrom(1024)
-    sock.sendto(data, addr)
+if __name__ == "__main__":
+    RESPONDER_PORT = os.getenv("RESPONDER_PORT", "9999")
+    PORT = int(RESPONDER_PORT)
+    run_udp(PORT)
