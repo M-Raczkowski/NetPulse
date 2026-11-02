@@ -11,13 +11,62 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
       timeout: 3s
       retries: 5
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+  responder:
+    build:
+      context: .
+      dockerfile: docker/agent.Dockerfile
+    image: netpulse-agent
+    command: python -m responder.main
+    cap_add:
+      - "NET_ADMIN"
+  agent-1:
+    image: netpulse-agent
+    environment:
+      AGENT_ID: agent-1
+      BACKEND_URL: http://backend:8000
+      TARGETS: responder:9999
+    cap_add:
+      - "NET_ADMIN"
+    depends_on:
+      - backend
+      - responder
+  agent-2:
+    image: netpulse-agent
+    environment:
+      AGENT_ID: agent-2
+      BACKEND_URL: http://backend:8000
+      TARGETS: responder:9999
+    cap_add:
+      - "NET_ADMIN"
+    depends_on:
+      - backend
+      - responder
+  agent-3:
+    image: netpulse-agent
+    environment:
+      AGENT_ID: agent-3
+      BACKEND_URL: http://backend:8000
+      TARGETS: responder:9999
+    cap_add:
+      - "NET_ADMIN"
+    depends_on:
+      - backend
+      - responder
 
 volumes:
   postgres_data:
-
-
-
