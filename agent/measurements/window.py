@@ -1,7 +1,7 @@
 from datetime import datetime
 from agent.measurements.jitter import calculate_jitter
 
-def build_measurement(agent_id: str, target: str, rtts: list[float | None], window_seconds: int, timestamp_utc: datetime) -> dict:
+def build_measurement(agent_id: str, target: str, rtts: list[float | None], window_seconds: int, timestamp_utc: datetime, throughput_mbps: float | None) -> dict:
     v = [value for value in rtts if value is not None]
     packets_sent = len(rtts)
     packets_received = len(v)
@@ -14,7 +14,6 @@ def build_measurement(agent_id: str, target: str, rtts: list[float | None], wind
         rtt_min_ms = None
         rtt_max_ms = None
     jitter_ms = calculate_jitter(rtts)
-    throughput_mbps = None
     return {
         "agent_id": agent_id,
         "target": target,
