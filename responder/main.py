@@ -13,10 +13,11 @@ def run_udp(port: int) -> None:
 
 
 def handle_client(conn: socket.socket) -> None:
-    while True:
-        data = conn.recv(65536)
-        if not data:
-            break
+    with conn:
+        while True:
+            data = conn.recv(65536)
+            if not data:
+                break
 
 
 def run_tcp(port: int) -> None:
@@ -26,8 +27,8 @@ def run_tcp(port: int) -> None:
     sock.listen()
     while True:
         conn, addr = sock.accept()
-        with conn:
-            handle_client(conn)
+        tcp_thread = threading.Thread(target=handle_client, args=(conn,), daemon=True)
+        tcp_thread.start()
 
 
 if __name__ == "__main__":
