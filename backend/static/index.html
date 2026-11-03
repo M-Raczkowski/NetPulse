@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NetPulse</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --card: #ffffff;
+      --text: #1d2330;
+      --muted: #667085;
+      --border: #dfe3ea;
+      --ok: #1f9d55;
+      --bad: #d64545;
+      --stale: #b7791f;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #12151c;
+        --card: #1b2029;
+        --text: #e6e9ef;
+        --muted: #98a2b3;
+        --border: #2c3340;
+        --ok: #3ccf7e;
+        --bad: #ff6b6b;
+        --stale: #f0b44c;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 16px;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.45 system-ui, sans-serif;
+    }
+    main { max-width: 1100px; margin: 0 auto; }
+    header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
+    h1 { margin: 0; font-size: 22px; flex: 1; }
+    h2 { margin: 0 0 8px; font-size: 15px; }
+    select { padding: 4px 8px; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 6px; }
+    #status { color: var(--muted); font-size: 12px; }
+    section { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 16px; }
+    #cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+    .card .name { font-weight: 600; }
+    .card .target { color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+    .card dl { display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; margin: 0; }
+    .card dt { color: var(--muted); }
+    .card dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+    .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; background: var(--ok); }
+    .dot.stale { background: var(--stale); }
+    .chart-box { position: relative; height: 300px; }
+    .note { margin: 0 0 8px; color: var(--muted); font-size: 12px; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    th { color: var(--muted); font-weight: 500; }
+    .open { color: var(--bad); font-weight: 600; }
+    .empty { color: var(--muted); padding: 8px 0; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>NetPulse</h1>
+    <label>Range
+      <select id="range">
+        <option value="30">30 min</option>
+        <option value="60" selected>1 h</option>
+        <option value="360">6 h</option>
+        <option value="1440">24 h</option>
+      </select>
+    </label>
+    <span id="status">loading...</span>
+  </header>
+
+  <div id="cards"></div>
+
+  <section>
+    <h2>Average RTT per minute</h2>
+    <p class="note">Strips above the plot show alerts: lanes top to bottom are threshold, z-score, EWMA; colour is the agent.</p>
+    <div class="chart-box"><canvas id="rtt-chart"></canvas></div>
+  </section>
+
+  <section>
+    <h2>Packet loss per minute</h2>
+    <p class="note">Same strips as above, for loss alerts.</p>
+    <div class="chart-box"><canvas id="loss-chart"></canvas></div>
+  </section>
+
+  <section>
+    <h2>Open alerts</h2>
+    <div class="table-wrap" id="open-alerts"></div>
+  </section>
+
+  <section>
+    <h2>Recent alerts</h2>
+    <div class="table-wrap" id="recent-alerts"></div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

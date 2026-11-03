@@ -5,6 +5,8 @@ from backend.services.scheduler import detection_loop
 from contextlib import asynccontextmanager
 import asyncio
 import logging
+from pathlib import Path
+from fastapi.staticfiles import StaticFiles
 
 
 @asynccontextmanager
@@ -22,3 +24,4 @@ logging.basicConfig(level=logging.INFO)
 app = FastAPI(title="NetPulse", lifespan=lifespan)
 app.include_router(measurements_router)
 app.include_router(alerts_router)
+app.mount("/panel", StaticFiles(directory=Path(__file__).parent / "static", html=True))
