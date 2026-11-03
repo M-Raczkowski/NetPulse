@@ -26,6 +26,8 @@ services:
         condition: service_healthy
     ports:
       - "8000:8000"
+    volumes:
+      - ./testbed/results:/app/testbed/results:ro
   responder:
     build:
       context: .
