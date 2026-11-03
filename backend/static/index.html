@@ -35,11 +35,16 @@
       color: var(--text);
       font: 14px/1.45 system-ui, sans-serif;
     }
-    main { max-width: 1100px; margin: 0 auto; }
+    main { max-width: 1400px; margin: 0 auto; }
     header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
     h1 { margin: 0; font-size: 22px; flex: 1; }
     h2 { margin: 0 0 8px; font-size: 15px; }
-    select { padding: 4px 8px; background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 6px; }
+    select, input[type="datetime-local"], button {
+      padding: 4px 8px; background: var(--card); color: var(--text);
+      border: 1px solid var(--border); border-radius: 6px; font: inherit;
+    }
+    button { cursor: pointer; }
+    select:disabled { opacity: 0.5; }
     #status { color: var(--muted); font-size: 12px; }
     section { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 16px; }
     #cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; margin-bottom: 16px; }
@@ -51,7 +56,14 @@
     .card dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
     .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; background: var(--ok); }
     .dot.stale { background: var(--stale); }
-    .chart-box { position: relative; height: 300px; }
+    .chart-row { display: grid; grid-template-columns: 84px 1fr; align-items: center; gap: 8px; margin-bottom: 6px; }
+    .chart-row .agent { font-weight: 600; }
+    .chart-row .unit { margin-left: 16px; color: var(--muted); font-size: 12px; font-weight: 400; }
+    .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; }
+    .chart-box { position: relative; min-width: 0; }
+    .toggle { display: flex; align-items: center; gap: 4px; }
+    .key { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 10px; }
+    [hidden] { display: none !important; }
     .note { margin: 0 0 8px; color: var(--muted); font-size: 12px; }
     .table-wrap { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; }
@@ -68,11 +80,19 @@
     <label>Range
       <select id="range">
         <option value="30">30 min</option>
-        <option value="60" selected>1 h</option>
-        <option value="360">6 h</option>
+        <option value="60">1 h</option>
+        <option value="360" selected>6 h</option>
         <option value="1440">24 h</option>
       </select>
     </label>
+    <label>Experiment
+      <select id="experiment"><option value="">-</option></select>
+    </label>
+    <label>From <input type="datetime-local" id="from"></label>
+    <label>To <input type="datetime-local" id="to"></label>
+    <button id="apply-window" type="button">Show window</button>
+    <button id="live" type="button">Live</button>
+    <label class="toggle"><input type="checkbox" id="log-scale" checked> Log scale (RTT)</label>
     <span id="status">loading...</span>
   </header>
 
@@ -80,14 +100,23 @@
 
   <section>
     <h2>Average RTT per minute</h2>
-    <p class="note">Strips above the plot show alerts: lanes top to bottom are threshold, z-score, EWMA; colour is the agent.</p>
-    <div class="chart-box"><canvas id="rtt-chart"></canvas></div>
+    <p class="note">One chart per agent, same time range and scales. With an experiment selected, red shading marks the injected faults.</p>
+    <div id="rtt-charts"></div>
   </section>
 
   <section>
     <h2>Packet loss per minute</h2>
-    <p class="note">Same strips as above, for loss alerts.</p>
-    <div class="chart-box"><canvas id="loss-chart"></canvas></div>
+    <div id="loss-charts"></div>
+  </section>
+
+  <section>
+    <h2>Alert timeline</h2>
+    <p class="note">Each bar is one alert, from opened to closed. Colour is the detector:
+      <span class="key" style="background:#e8833a"></span>threshold
+      <span class="key" style="background:#9b5de5"></span>z-score
+      <span class="key" style="background:#2a9d8f"></span>EWMA</p>
+    <div id="timeline-box" class="chart-box"><canvas id="timeline-chart"></canvas></div>
+    <div id="timeline-empty" class="empty" hidden>No alerts in this range</div>
   </section>
 
   <section>
