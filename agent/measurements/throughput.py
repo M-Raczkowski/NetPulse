@@ -17,4 +17,4 @@ def measure_throughput(host: str, port: int, duration: float, timeout: float) ->
             throughput_mbps = sent * 8 / (end - start) / 1000000
             return throughput_mbps
     except OSError:
-        "responder off"
+        return None
