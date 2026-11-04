@@ -15,7 +15,7 @@ def load_experiments(results_dir: Path) -> list[dict]:
             run = json.loads(run_file.read_text(encoding="utf-8"))
             experiments.append({
                 "name": run_file.parent.name,
-                "agents": run.get("agents") or [run["agent"]],  # old runs had a single "agent"
+                "agents": run.get("agents") or [run["agent"]],
                 "started_utc": run["started_utc"],
                 "finished_utc": run.get("finished_utc"),
                 "scenarios": run["scenarios"],
