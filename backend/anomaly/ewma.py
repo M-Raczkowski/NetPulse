@@ -1,13 +1,14 @@
 import math
 import statistics
 
-def ewma(history: list[float | None], recent: list[float | None], alpha: float = 0.3, L: float = 3.0, min_history: int = 10) -> bool:
+def ewma(history: list[float | None], recent: list[float | None], alpha: float = 0.3, L: float = 3.0, min_history: int = 10,
+         min_deviation: float = 0.0) -> bool:
     history = [x for x in history if x is not None]
     recent = [x for x in recent if x is not None]
     if len(history) < min_history or len(recent) == 0:
         return False
     avg_history = statistics.mean(history)
-    deviation = statistics.stdev(history)
+    deviation = max(statistics.stdev(history), min_deviation)
     if deviation == 0:
         return False
     ewma_value = avg_history

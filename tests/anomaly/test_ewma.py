@@ -48,3 +48,21 @@ def test_ewma_prolonged_moderate_shift_is_anomaly():
 def test_ewma_prolonged_small_shift_is_not_anomaly():
     result = ewma(BASE, [43.0,43.0,43.0])
     assert result is False
+
+TIGHT = [0.45, 0.46, 0.44, 0.45, 0.46, 0.45, 0.44, 0.46, 0.45, 0.45]
+
+def test_ewma_tiny_shift_is_anomaly_without_min_deviation():
+    result = ewma(TIGHT, [0.6, 0.6, 0.6])
+    assert result is True
+
+def test_ewma_tiny_shift_ignored_with_min_deviation():
+    result = ewma(TIGHT, [0.6, 0.6, 0.6], min_deviation=0.1)
+    assert result is False
+
+def test_ewma_large_shift_detected_with_min_deviation():
+    result = ewma(TIGHT, [20.0, 20.0, 20.0], min_deviation=0.1)
+    assert result is True
+
+def test_ewma_zero_history_detected_with_min_deviation():
+    result = ewma([0.0]*10, [5.0, 5.0], min_deviation=1.0)
+    assert result is True

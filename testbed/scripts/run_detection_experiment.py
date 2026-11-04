@@ -65,14 +65,14 @@ def detector_config() -> dict:
         from backend.anomaly.ewma import ewma
         from backend.anomaly.lifecycle import update_alert
         from backend.anomaly.zscore import z_score
-        from backend.services.engine import METRICS_THRESHOLD
+        from backend.services.engine import METRICS_MIN_DEVIATION, METRICS_THRESHOLD
         from backend.services.series import fetch_metric_series
 
         def defaults(function) -> dict:
             return {name: p.default for name, p in inspect.signature(function).parameters.items()
                     if p.default is not inspect.Parameter.empty}
 
-        return {"thresholds": METRICS_THRESHOLD, "zscore": defaults(z_score), "ewma": defaults(ewma),
+        return {"thresholds": METRICS_THRESHOLD, "min_deviation": METRICS_MIN_DEVIATION, "zscore": defaults(z_score), "ewma": defaults(ewma),
                 "lifecycle": defaults(update_alert), "history_window_min": defaults(fetch_metric_series)["minutes"]}
     except Exception as error:
         return {"error": repr(error)}

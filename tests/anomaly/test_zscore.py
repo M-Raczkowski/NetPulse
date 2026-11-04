@@ -35,3 +35,21 @@ def test_z_score_latest_none():
 def test_z_score_history_one_below_minimum():
     result = z_score(BASE[:-1], 45.0)
     assert result is False
+
+TIGHT = [0.45, 0.46, 0.44, 0.45, 0.46, 0.45, 0.44, 0.46, 0.45, 0.45]
+
+def test_z_score_tiny_shift_is_anomaly_without_min_deviation():
+    result = z_score(TIGHT, 0.6)
+    assert result is True
+
+def test_z_score_tiny_shift_ignored_with_min_deviation():
+    result = z_score(TIGHT, 0.6, min_deviation=0.1)
+    assert result is False
+
+def test_z_score_large_shift_detected_with_min_deviation():
+    result = z_score(TIGHT, 20.0, min_deviation=0.1)
+    assert result is True
+
+def test_z_score_zero_history_detected_with_min_deviation():
+    result = z_score([0.0]*10, 5.0, min_deviation=1.0)
+    assert result is True

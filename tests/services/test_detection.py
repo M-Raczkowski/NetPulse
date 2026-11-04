@@ -42,3 +42,16 @@ def test_no_values():
 def test_unknown_detector():
     with pytest.raises(ValueError):
         is_anomalous("foo", BASE, threshold=100.0)
+
+
+TIGHT = [0.45, 0.46, 0.44, 0.45, 0.46, 0.45, 0.44, 0.46, 0.45, 0.45]
+
+
+def test_zscore_min_deviation_is_passed_on():
+    assert is_anomalous("zscore", TIGHT + [0.6], threshold=100.0) is True
+    assert is_anomalous("zscore", TIGHT + [0.6], threshold=100.0, min_deviation=0.1) is False
+
+
+def test_ewma_min_deviation_is_passed_on():
+    assert is_anomalous("ewma", TIGHT + [0.6] * 3, threshold=100.0) is True
+    assert is_anomalous("ewma", TIGHT + [0.6] * 3, threshold=100.0, min_deviation=0.1) is False
