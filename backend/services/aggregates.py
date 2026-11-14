@@ -20,7 +20,10 @@ async def fetch_aggregates(
                                                                                                 0)).label("rtt_avg_ms")
     rtt_min_ms = func.min(Measurement.rtt_min_ms).label("rtt_min_ms")
     rtt_max_ms = func.max(Measurement.rtt_max_ms).label("rtt_max_ms")
-    stmt = select(start, packets_sent, packets_received, packet_loss_percentage, rtt_avg_ms, rtt_min_ms, rtt_max_ms)
+    jitter_ms = func.avg(Measurement.jitter_ms).label("jitter_ms")
+    throughput_mbps = func.avg(Measurement.throughput_mbps).label("throughput_mbps")
+    stmt = select(start, packets_sent, packets_received, packet_loss_percentage, rtt_avg_ms, rtt_min_ms, rtt_max_ms,
+                  jitter_ms, throughput_mbps)
     if agent_id:
         stmt = stmt.where(Measurement.agent_id == agent_id)
     if target:
