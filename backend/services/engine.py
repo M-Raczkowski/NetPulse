@@ -8,7 +8,13 @@ STATES: dict[tuple[str, str, str, str], AlertState] = {}
 METRICS_THRESHOLD = {"rtt_avg_ms": 100.0,
                      "packet_loss_percentage": 5.0}
 METRICS_MIN_DEVIATION = {"rtt_avg_ms": 0.1,
-                         "packet_loss_percentage": 0.0}
+                         "packet_loss_percentage": 0.0,
+                         "jitter_ms": 0.1,
+                         "throughput_mbps": 4000.0}
+METRICS_DIRECTION = {"rtt_avg_ms": "high",
+                     "packet_loss_percentage": "high",
+                     "jitter_ms": "high",
+                     "throughput_mbps": "low"}
 DETECTORS = ("threshold", "zscore", "ewma")
 
 
@@ -19,13 +25,14 @@ async def check_combination(
         metric: str,
         detector: str,
         values: list[float | None],
-        threshold: float,
-        min_deviation: float = 0.0) -> str | None:
+        threshold: float | None,
+        min_deviation: float = 0.0,
+        direction: str = "high") -> str | None:
     open_row = await find_open_alert(db, agent_id, target, metric, detector)
     previous = STATES.get((agent_id, target, metric, detector), AlertState())
     current = AlertState(is_open=open_row is not None, anomaly_streak=previous.anomaly_streak,
                          normal_streak=previous.normal_streak)
-    anomaly = is_anomalous(detector, values, threshold, min_deviation)
+    anomaly = is_anomalous(detector, values, threshold, min_deviation, direction)
     new_state, event = update_alert(current, anomaly)
     STATES[(agent_id, target, metric, detector)] = new_state
     if event == "opened":
@@ -39,9 +46,12 @@ async def run_detection(
         db: AsyncSession) -> None:
     pairs = await list_active_pairs(db)
     for agent_id, target in pairs:
-        for metric, threshold in METRICS_THRESHOLD.items():
+        for metric, direction in METRICS_DIRECTION.items():
+            threshold = METRICS_THRESHOLD.get(metric)
             values = await fetch_metric_series(db, agent_id, target, metric)
             for detector in DETECTORS:
+                if detector == "threshold" and threshold is None:
+                    continue
                 await check_combination(db, agent_id, target, metric, detector, values, threshold,
-                                        METRICS_MIN_DEVIATION[metric])
+                                        METRICS_MIN_DEVIATION[metric], direction)
     await db.commit()
