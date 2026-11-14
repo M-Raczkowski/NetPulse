@@ -55,3 +55,13 @@ def test_zscore_min_deviation_is_passed_on():
 def test_ewma_min_deviation_is_passed_on():
     assert is_anomalous("ewma", TIGHT + [0.6] * 3, threshold=100.0) is True
     assert is_anomalous("ewma", TIGHT + [0.6] * 3, threshold=100.0, min_deviation=0.1) is False
+
+
+def test_zscore_direction_is_passed_on():
+    assert is_anomalous("zscore", BASE + [20.0], threshold=100.0) is False
+    assert is_anomalous("zscore", BASE + [20.0], threshold=100.0, direction="low") is True
+
+
+def test_ewma_direction_is_passed_on():
+    assert is_anomalous("ewma", BASE + [20.0] * 3, threshold=100.0) is False
+    assert is_anomalous("ewma", BASE + [20.0] * 3, threshold=100.0, direction="low") is True

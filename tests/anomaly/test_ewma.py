@@ -1,3 +1,4 @@
+import pytest
 from backend.anomaly.ewma import ewma
 BASE = [40.0, 42.0, 41.0, 39.0, 43.0, 40.0, 41.0, 42.0, 40.0, 41.0]
 
@@ -66,3 +67,27 @@ def test_ewma_large_shift_detected_with_min_deviation():
 def test_ewma_zero_history_detected_with_min_deviation():
     result = ewma([0.0]*10, [5.0, 5.0], min_deviation=1.0)
     assert result is True
+
+def test_ewma_low_direction_detects_sustained_drop():
+    result = ewma(BASE, [20.0, 20.0, 20.0], direction="low")
+    assert result is True
+
+def test_ewma_low_direction_ignores_rise():
+    result = ewma(BASE, [60.0, 60.0, 60.0], direction="low")
+    assert result is False
+
+def test_ewma_low_direction_single_drop_is_smoothed():
+    result = ewma(BASE, [37.0], direction="low")
+    assert result is False
+
+def test_ewma_low_direction_zero_deviation():
+    result = ewma([40.0]*10, [20.0], direction="low")
+    assert result is False
+
+def test_ewma_low_direction_respects_min_deviation():
+    assert ewma(TIGHT, [0.3, 0.3, 0.3], direction="low") is True
+    assert ewma(TIGHT, [0.3, 0.3, 0.3], min_deviation=0.1, direction="low") is False
+
+def test_ewma_unknown_direction():
+    with pytest.raises(ValueError):
+        ewma(BASE, [45.0], direction="sideways")
