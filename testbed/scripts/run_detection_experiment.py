@@ -21,7 +21,11 @@ SCENARIOS = {
     "loss10": "loss 10%",
     "delay50": "delay 50ms",
     "loss5": "loss 5%",
+    "rate100": "rate 100mbit",
+    "rate10": "rate 10mbit",
+    "jitter": "delay 50ms 10ms",
 }
+DEFAULT_SCENARIOS = ("delay20", "delay150", "loss2", "loss10", "delay50", "loss5")
 AGENTS = ("agent-1", "agent-2", "agent-3")
 
 
@@ -132,7 +136,7 @@ def main() -> None:
     parser.add_argument("--base-url", default="http://127.0.0.1:8000")
     parser.add_argument("--agents", nargs="+", default=list(AGENTS), choices=list(AGENTS),
                         help="agents that get faults; their faults are staggered and never overlap")
-    parser.add_argument("--scenarios", nargs="+", default=list(SCENARIOS), choices=list(SCENARIOS))
+    parser.add_argument("--scenarios", nargs="+", default=list(DEFAULT_SCENARIOS), choices=list(SCENARIOS))
     parser.add_argument("--repeats", type=int, default=1, help="how many times each agent runs every scenario")
     parser.add_argument("--baseline", type=int, default=900, help="seconds without faults at the start")
     parser.add_argument("--disturb", type=int, default=300, help="seconds of each fault")
